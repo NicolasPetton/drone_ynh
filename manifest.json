@@ -1,0 +1,56 @@
+{
+	"package_format": 1,
+	"name": "Drone",
+	"id": "drone",
+	"packaging_format": 1,
+	"description": {
+		"en": "A continuous delivery platform built on Docker, written in Go",
+		"fr": "Une plateforme d'intégration continuebasée sur Docker, écrite en  Go"
+	},
+	"url": "http://try.drone.io",
+	"license": "MIT",
+	"version": "0.4",
+	"maintainer": {
+		"name": "NicolasPetton",
+		"email": "nicolas@petton.fr"
+	},
+	"multi_instance": false,
+	"services": [
+		"nginx"
+	],
+	"requirements": {
+		"yunohost": ">= 2.4.0"
+	},
+	"arguments": {
+		"install" : [
+			{
+				"name": "domain",
+				"type": "domain",
+				"ask": {
+					"en": "Choose a domain for Drone",
+					"fr": "Choisissez un domaine pour Drone"
+				},
+				"example": "domain.org"
+			},
+			{
+				"name": "path",
+				"type": "path",
+				"ask": {
+					"en": "Choose a path for Drne",
+					"fr": "Choisissez un chemin pour Drone"
+				},
+				"example": "/drone",
+				"default": "/drone"
+			},
+			{
+				"name": "public_site",
+				"ask": {
+					"en": "Is it a public site ?",
+					"fr": "Est-ce un site public ?"
+				},
+				"choices": ["Yes", "No"],
+				"default": "Yes"
+			}
+		]
+	}
+}

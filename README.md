@@ -1,1 +1,16 @@
-# drone_ynh
+# Drone package for Yunohost
+
+[Drone](https://github.com/drone/drone) is a Continuous Delivery platform built
+on Docker, written in Go.
+
+## Requirements
+A functional instance of [YunoHost](https://yunohost.org)
+
+## Installation
+From the command line:
+
+`sudo yunohost app install -l Drone https://github.com/NicolasPetton/drone_ynh`
+
+
+
+
