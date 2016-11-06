@@ -27,20 +27,28 @@
 				"name": "domain",
 				"type": "domain",
 				"ask": {
-					"en": "Choose a domain for Drone",
-					"fr": "Choisissez un domaine pour Drone"
+					"en": "Choose a domain for Drone (Drone will be installed at the root of the domain!)",
+					"fr": "Choisissez un domaine pour Drone (Drone sera installé à la racine du domaine!)"
 				},
 				"example": "domain.org"
 			},
 			{
-				"name": "path",
-				"type": "path",
+				"name": "remote_driver",
 				"ask": {
-					"en": "Choose a path for Drne",
-					"fr": "Choisissez un chemin pour Drone"
+					"en": "Choose a remote driver",
+					"fr": "Choisissez un pilote distant"
 				},
-				"example": "/drone",
-				"default": "/drone"
+				"example": "gogs",
+				"default": "gogs"
+			},
+			{
+				"name": "remote_config",
+				"ask": {
+					"en": "Choose a remote config",
+					"fr": "Choisissez une configuration distante"
+				},
+				"example": "https://petton.fr/git?open=false",
+				"default": "https://petton.fr/git?open=false"
 			},
 			{
 				"name": "public_site",

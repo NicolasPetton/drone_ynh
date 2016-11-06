@@ -1,0 +1,95 @@
+#!/bin/bash
+
+set -eu
+
+source ./_common.sh
+source /usr/share/yunohost/helpers
+
+# Set app specific variables
+app=$APPNAME
+
+# Retrieve arguments
+domain=$1
+remote_driver=$2
+remote_config=$3
+is_public=$4
+
+sudo yunohost app checkurl "${domain}" -a "$app" \
+  || ynh_die "The path ${domain} is not available for app installation."
+
+# Check port availability
+sudo yunohost app checkport 8112 || ynh_die "Port 8112 already used, aborting."
+
+# Check destination directory
+DESTDIR="/opt/$app"
+[ -d $DESTDIR ] && ynh_die \
+"The destination directory '$DESTDIR' already exists.\
+ You should safely delete it before installing this app."
+
+# Check architecture & set Drone image
+if [ $ARCHITECTURE = "amd64" ]; then
+    DRONE_IMAGE=drone/drone:$VERSION
+elif [ $ARCHITECTURE = "arm" ]; then
+    DRONE_IMAGE=armhfbuild/drone:$VERSION
+else
+    ynh_die "Unsupported architecture, aborting."
+fi
+
+# Install the Drone configuration file
+sudo mkdir -p "$DESTDIR"
+sudo mkdir -p "$DESTDIR"/data
+cat << EOF | sudo tee -a "$DESTDIR"/dronerc
+REMOTE_DRIVER=$remote_driver
+REMOTE_CONFIG=$remote_config
+DATABASE_DRIVER=sqlite3
+DATABASE_CONFIG=/var/lib/drone/drone.sqlite
+EOF
+
+# Install and setup Docker
+if [ ! -f /usr/bin/docker ]; then
+    echo "Installing Docker"
+    # docker.io is in jessie-backports
+    grep -q -R 'jessie-backports' /etc/apt/sources.list{,.d} || {
+        echo "deb http://httpredir.debian.org/debian jessie-backports main" \
+            | sudo tee -a /etc/apt/sources.list.d/backports.list >/dev/null
+    }
+
+    sudo apt-get update
+    sudo apt-get install docker.io -y
+
+    sudo usermod -aG docker admin
+
+    sudo yunohost service add docker
+
+    sudo systemctl enable docker
+    sudo systemctl restart docker
+fi
+
+# Install Drone
+sudo docker pull $DRONE_IMAGE
+sudo docker run \
+        --volume $DESTDIR/data:/var/lib/drone \
+        --volume /var/run/docker.sock:/var/run/docker.sock \
+        --env-file $DESTDIR/dronerc \
+        --restart=always \
+        --publish=8112:8000 \
+        --detach=true \
+        --name=drone \
+        $DRONE_IMAGE
+
+sudo cp ../conf/drone.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo yunohost service add $app
+
+ynh_app_setting_set $app is_public $is_public
+
+# Copy it to Nginx conf directory
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+if [ "$is_public" = "Yes" ]; then
+    sudo yunohost app setting $app skipped_uris -v "/"
+fi
+
+# Reload services
+sudo systemctl reload nginx.service || true
+sudo systemctl restart "$app".service || true

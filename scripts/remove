@@ -1,0 +1,33 @@
+#!/bin/bash
+
+source ./_common.sh
+source /usr/share/yunohost/helpers
+
+# Set app specific variables
+app=$APPNAME
+DESTDIR="/opt/$app"
+
+# Stop Drone
+sudo docker stop drone
+sudo docker rm drone
+sudo systemctl stop "$app".service
+
+# Retrieve domain from app settings
+domain=$(ynh_app_setting_get "$app" domain)
+
+# Delete app directory and configurations
+sudo rm -rf "/opt/${app}"
+[[ -n $domain ]] && sudo rm -f "/etc/nginx/conf.d/${domain}.d/${app}.conf"
+
+sudo rm -rf "$DESTDIR"
+
+# Remove init script
+sudo systemctl disable "$app".service
+sudo rm -f /etc/systemd/system/"$app".service
+sudo systemctl daemon-reload
+
+# Remove monitor
+sudo yunohost service remove "$app"
+
+# Reload services
+sudo systemctl reload nginx.service || true
