@@ -47,8 +47,8 @@
 					"en": "Choose a remote config",
 					"fr": "Choisissez une configuration distante"
 				},
-				"example": "https://petton.fr/git?open=false",
-				"default": "https://petton.fr/git?open=false"
+				"example": "https://example.fr/gogs?open=false",
+				"default": "https://example.fr/gogs?open=false"
 			},
 			{
 				"name": "public_site",

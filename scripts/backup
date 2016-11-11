@@ -1,0 +1,18 @@
+#!bin/bash
+
+set -eu
+
+source /usr/share/yunohost/helpers
+
+# Set app specific variables
+app=${APPNAME:-drone}
+domain=$(ynh_app_setting_get "$app" domain)
+
+# Copy the data files
+DATADIR="/opt/$app"
+ynh_backup "$DATADIR" "data"
+
+# Copy the conf files
+mkdir ./conf
+ynh_backup "/etc/nginx/conf.d/${domain}.d/${app}.conf" "conf/nginx.conf"
+ynh_backup "/etc/systemd/system/${app}.service" "conf/${app}.service"

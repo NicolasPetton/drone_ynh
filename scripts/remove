@@ -7,9 +7,11 @@ source /usr/share/yunohost/helpers
 app=$APPNAME
 DESTDIR="/opt/$app"
 
-# Stop Drone
-sudo docker stop drone
-sudo docker rm drone
+# Stop & remove Drone
+sudo docker stop "$app"
+sudo docker rm "$app"
+sudo docker rmi "$DRONE_IMAGE"
+
 sudo systemctl stop "$app".service
 
 # Retrieve domain from app settings

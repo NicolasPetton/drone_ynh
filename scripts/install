@@ -20,25 +20,14 @@ sudo yunohost app checkurl "${domain}" -a "$app" \
 # Check port availability
 sudo yunohost app checkport 8112 || ynh_die "Port 8112 already used, aborting."
 
-# Check destination directory
-DESTDIR="/opt/$app"
-[ -d $DESTDIR ] && ynh_die \
-"The destination directory '$DESTDIR' already exists.\
+# Check data directory
+[ -d $DATADIR ] && ynh_die \
+"The data directory '$DATADIR' already exists.\
  You should safely delete it before installing this app."
 
-# Check architecture & set Drone image
-if [ $ARCHITECTURE = "amd64" ]; then
-    DRONE_IMAGE=drone/drone:$VERSION
-elif [ $ARCHITECTURE = "arm" ]; then
-    DRONE_IMAGE=armhfbuild/drone:$VERSION
-else
-    ynh_die "Unsupported architecture, aborting."
-fi
-
 # Install the Drone configuration file
-sudo mkdir -p "$DESTDIR"
-sudo mkdir -p "$DESTDIR"/data
-cat << EOF | sudo tee -a "$DESTDIR"/dronerc
+sudo mkdir -p "$DATADIR"/data
+cat << EOF | sudo tee -a "$DATADIR"/dronerc
 REMOTE_DRIVER=$remote_driver
 REMOTE_CONFIG=$remote_config
 DATABASE_DRIVER=sqlite3
@@ -68,9 +57,9 @@ fi
 # Install Drone
 sudo docker pull $DRONE_IMAGE
 sudo docker run \
-        --volume $DESTDIR/data:/var/lib/drone \
+        --volume $DATADIR/data:/var/lib/drone \
         --volume /var/run/docker.sock:/var/run/docker.sock \
-        --env-file $DESTDIR/dronerc \
+        --env-file $DATADIR/dronerc \
         --restart=always \
         --publish=8112:8000 \
         --detach=true \

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -eu
+
+source /usr/share/yunohost/helpers
+
+# Set app specific variables
+app=${APPNAME:-drone}
+
+# Retrieve old app settings
+domain=$(ynh_app_setting_get "$app" domain)
+
+sudo yunohost app checkurl "${domain}" \
+    || ynh_die "The path ${domain} is not available for app installation."
+
+# Check port availability
+sudo yunohost app checkport 8112 || ynh_die "Port 8112 already used, aborting."
+
+# Check data directory
+[ -d $DATADIR ] && ynh_die \
+"The data directory '$DATADIR' already exists.\
+ You should safely delete it before installing this app."
+
+# Check configuration files
+nginx_conf="/etc/nginx/conf.d/${domain}.d/${app}.conf"
+[[ -f $nginx_conf ]] && ynh_die \
+"The NGINX configuration already exists at '${nginx_conf}'.
+You should safely delete it before restoring this app."
+
+# Restore the data
+sudo cp -a ./data/. "$DATADIR/data"
+
+# Restore configuration files
+sudo cp -a ./conf/nginx.conf "$nginx_conf"
+sudo cp -a ./conf/"$app".service /etc/systemd/system/"$app".service
+
+sudo yunohost service add "$app"
+
+# Reload services
+sudo systemctl reload nginx.service || true
+sudo systemctl restart "$app".service || true
