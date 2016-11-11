@@ -1,7 +1,5 @@
 # Drone package for Yunohost
 
-*NOT WORKING YET*
-
 [Drone](https://github.com/drone/drone) is a Continuous Delivery platform built
 on Docker, written in Go.
 
